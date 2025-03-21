@@ -8,7 +8,6 @@ export const ButtonInputSearch = (props) => {
     return (
         <div style={{ display: 'flex', background: "#fff" }}>
             <InputComponent
-                bordered={false}
                 style={{ borderRadius: '0px' }}
                 size={size}
                 placeholder={placeholder}
@@ -17,7 +16,7 @@ export const ButtonInputSearch = (props) => {
                 style={{ border: "none", borderRadius: '0px', background: "rgb(13,92,182)", color: "#fff" }}
                 size='large'
                 icon={<SearchOutlined
-                    bordered={false} />}>
+                />}>
                 {textButton}
             </Button>
         </div>

@@ -1,0 +1,61 @@
+/* Định dạng chung cho toast */
+.Toastify__toast {
+    border-radius: 4px;
+    /* Bo góc nhẹ */
+    padding: 8px 16px;
+    /* Padding giống Ant Design */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    /* Font giống Ant Design */
+    font-size: 14px;
+    /* Cỡ chữ */
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
+    /* Bóng nhẹ */
+    background-color: #ffffff;
+    /* Nền trắng */
+    color: #000000;
+    /* Chữ đen */
+    min-height: 32px;
+    /* Chiều cao tối thiểu */
+    width: fit-content;
+}
+
+/* Định dạng nội dung */
+.Toastify__toast-body {
+    margin: 0;
+    /* Xóa margin mặc định */
+    display: flex;
+    align-items: center;
+    /* Căn giữa icon và text */
+}
+
+/* Thanh tiến trình */
+.Toastify__progress-bar {
+    height: 2px;
+    /* Thanh mỏng */
+}
+
+.Toastify__progress-bar--success {
+    background-color: #52c41a;
+    /* Xanh đậm */
+}
+
+.Toastify__progress-bar--error {
+    background-color: #f5222d;
+    /* Đỏ đậm */
+}
+
+.Toastify__progress-bar--warning {
+    background-color: #faad14;
+    /* Vàng đậm */
+}
+
+.Toastify__progress-bar--info {
+    background-color: #1890ff;
+    /* Xanh đậm */
+}
+
+.Toastify__toast--enter,
+.Toastify__toast--exit {
+    transition: all 0.3s ease-in-out;
+    /* Thời gian 0.3s, mượt mà với ease-in-out */
+}

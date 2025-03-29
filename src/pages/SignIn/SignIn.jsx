@@ -31,7 +31,7 @@ const SignIn = () => {
             localStorage.setItem('access_token', JSON.stringify(data?.access_token));
             if (data?.access_token) {
                 const decoded = jwtDecode(data?.access_token)
-                console.log("check decoded: ", decoded)
+                // console.log("check decoded: ", decoded)
                 if (decoded?.id) {
                     handleGetDetailUser(decoded?.id, data?.access_token)
                 }
@@ -45,7 +45,7 @@ const SignIn = () => {
     const handleGetDetailUser = async (id, token) => {
         const res = await UserService.getDetailUser(id, token)
         dispatch(updateUser({ ...res?.data, access_token: token }))
-        console.log("check res", res)
+        // console.log("check res", res)
     }
 
     const handleNavigateSingUp = () => {
@@ -61,7 +61,6 @@ const SignIn = () => {
 
     const handleSignIn = () => {
         mutation.mutate({ email, password })
-
     }
 
     return (

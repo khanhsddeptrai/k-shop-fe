@@ -3,12 +3,12 @@ import { WrapperInputForm } from './style'
 
 
 const InputForm = (props) => {
-    const { placeholder, type } = props
+    const { placeholder, type, value, handleOnchange } = props
     const handleOnchangeInput = (e) => {
-        props.handleOnchange(e.target.value)
+        handleOnchange(e.target.value)
     }
     return (
-        <WrapperInputForm placeholder={placeholder} type={type} onChange={handleOnchangeInput} style={{ marginBottom: "5px" }}>
+        <WrapperInputForm value={value} placeholder={placeholder} type={type} onChange={handleOnchangeInput} >
 
         </WrapperInputForm>
     )

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { routes } from './routes/indexRoutes';
 import DefaultComponent from './components/DefaultComponent/DefaultComponent';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { jwtDecode } from 'jwt-decode';
 import { useDispatch } from 'react-redux';
@@ -11,7 +11,6 @@ import * as UserService from './services/UserService';
 
 import '../src/assets/css/customToast.css'
 import { isJsonString } from './untils';
-import axios from 'axios';
 
 function App() {
   const dispatch = useDispatch()
@@ -33,24 +32,28 @@ function App() {
   }
 
   UserService.axiosJWT.interceptors.request.use(async (config) => {
-    const { decoded } = handleDecode()
+    const { decoded } = handleDecode();
     const currentTime = new Date().getTime() / 1000;
     if (decoded?.exp < currentTime) {
-      const data = await UserService.refreshToken()
-      console.log("data: ", data)
-      config.headers['token'] = `Bearer ${data?.access_token}`
-
+      try {
+        const data = await UserService.refreshToken();
+        config.headers['token'] = `Bearer ${data?.access_token}`;
+      } catch (error) {
+        localStorage.removeItem('access_token');
+        toast.warning("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
     }
-    return config
+    return config;
   }, (error) => {
-    return Promise.reject(error)
-  }
-  )
+    return Promise.reject(error);
+  });
 
   const handleGetDetailUser = async (id, token) => {
     const res = await UserService.getDetailUser(id, token)
     dispatch(updateUser({ ...res?.data, access_token: token }))
-    console.log("check res", res)
+    // console.log("check res", res)
   }
 
   return (

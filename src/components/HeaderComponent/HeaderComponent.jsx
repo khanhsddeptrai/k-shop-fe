@@ -1,61 +1,123 @@
-import React from "react";
-import { Badge, Col } from 'antd';
-import { WrapperHeader, WrapperHeaderAccount, WrapperTextHeader } from "./style";
+import React, { useEffect, useState } from "react";
+import { Badge, Col, Popover } from 'antd';
+import { WrapperContentPopover, WrapperHeader, WrapperHeaderAccount, WrapperTextHeader } from "./style";
 // import Search from "antd/es/transfer/search";
 import { UserOutlined, CaretDownOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { ButtonInputSearch } from "../ButtonInputSearch/ButtonInputSearch";
 import { useNavigate } from "react-router-dom";
-import { use } from "react";
 import { useSelector } from "react-redux";
+import { useDispatch } from 'react-redux';
+import { resetUser } from '../../redux/slices/userSlice';
 
-
+import * as UserService from '../../services/UserService';
+import Loading from "../../components/Loading/Loading";
+import { toast } from "react-toastify";
 
 const HeaderComponent = () => {
+    const [isPending, setIsPending] = useState(false)
+    const [userName, setUserName] = useState("")
+    const [avatar, setAvatar] = useState("")
+    const [popoverVisible, setPopoverVisible] = useState(false);
     const user = useSelector(state => state.user)
-    console.log(user)
-    const naviagte = useNavigate();
+    const dispatch = useDispatch()
+    const navigate = useNavigate();
     const handleNavigateLogin = () => {
-        naviagte('/sign-in')
+        navigate('/sign-in')
     }
+
+    const handleLogout = async () => {
+        setIsPending(true)
+        localStorage.removeItem("access_token");
+        const res = await UserService.logOut()
+        dispatch(resetUser())
+        setIsPending(false)
+        navigate("/sign-in")
+        toast.success(res.message)
+        setPopoverVisible(false);
+    }
+
+    useEffect(() => {
+        setIsPending(true)
+        setUserName(user?.name)
+        setAvatar(user?.avatar)
+        setIsPending(false)
+    }, [user?.name, user?.avatar])
+
+    const handleNavigateProfile = () => {
+        setPopoverVisible(false);
+        navigate('/profile');
+    };
+
+    const content = (
+        <div>
+            <WrapperContentPopover onClick={handleNavigateProfile}>Thông tin người dùng</WrapperContentPopover>
+            <WrapperContentPopover onClick={handleLogout}>Đăng xuất</WrapperContentPopover>
+        </div>
+    )
 
     return (
         <div>
             <WrapperHeader>
-                <Col span={4}>
-                    <WrapperTextHeader>K-SHOP</WrapperTextHeader>
+                <Col span={3}>
+                    <WrapperTextHeader href="/">K-SHOP</WrapperTextHeader>
                 </Col>
-                <Col span={12}>
+                <Col span={13} >
                     <ButtonInputSearch size="large" placeholder="Tìm sản phẩm" textButton="Tìm kiếm" />
                 </Col>
-                <Col span={8}>
-                    <WrapperHeaderAccount>
-                        <UserOutlined style={{ fontSize: "30px" }} />
-                        {user?.name ? <div>{user.name}</div>
-                            :
-                            <div style={{ marginRight: "20px" }}>
-                                <span
-                                    style={{ cursor: "pointer" }}
-                                    onClick={handleNavigateLogin}
-                                >Đăng nhập/ Đăng ký
-                                </span>
-                                <div>
-                                    <span
-                                        style={{ cursor: "pointer" }}
+                <Col span={8} >
+                    <Loading isPending={isPending}>
+                        <WrapperHeaderAccount>
+                            {avatar ? <img src={avatar} style={{
+                                width: "38px",
+                                height: "38px",
+                                borderRadius: "50%",
+                                objectFit: "cover",
+                                marginLeft: "15px"
+                            }} />
+                                :
+                                <UserOutlined style={{ fontSize: "30px", marginLeft: "15px" }} />
+                            }
+
+                            {user?.access_token ?
+                                <>
+                                    <Popover
+                                        content={content}
+                                        trigger={"click"}
+                                        open={popoverVisible}
+                                        onOpenChange={(newOpen) => setPopoverVisible(newOpen)}
                                     >
-                                        Tài khoản
+                                        <div style={{ cursor: "pointer" }}>{user?.name || user.email}</div>
+                                    </Popover>
+                                </>
+                                :
+                                <div style={{ marginRight: "10px" }}>
+                                    <span
+                                        style={{ cursor: "pointer", display: "block", width: "140px" }}
+                                        onClick={handleNavigateLogin}
+                                    >Đăng nhập/ Đăng ký
                                     </span>
-                                    <CaretDownOutlined />
-                                </div>
-                            </div>}
+                                    <div>
+                                        <span
+                                            style={{ cursor: "pointer" }}
+                                        >
+                                            Tài khoản
+                                        </span>
+                                        <CaretDownOutlined />
+                                    </div>
+                                </div>}
 
-                        <WrapperHeaderAccount >
-                            <Badge count={5} size="small">
-                                <ShoppingCartOutlined style={{ fontSize: "30px", color: "#fff" }} />
-                            </Badge>
-                            <span>Giỏ hàng</span>
+                            <WrapperHeaderAccount >
+                                <Badge count={5} size="small">
+                                    <ShoppingCartOutlined style={{ fontSize: "30px", color: "#fff" }} />
+                                </Badge>
+                                <span
+                                    style={{ cursor: "pointer", display: "block", width: "80px" }}
+                                >Giỏ hàng
+                                </span>
+                            </WrapperHeaderAccount>
+
                         </WrapperHeaderAccount>
-
-                    </WrapperHeaderAccount>
+                    </Loading>
                 </Col>
             </WrapperHeader>
         </div>

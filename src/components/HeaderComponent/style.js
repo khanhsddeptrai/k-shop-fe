@@ -10,11 +10,16 @@ export const WrapperHeader = styled(Row)`
     flex-wrap: nowrap;
 `
 
-export const WrapperTextHeader = styled.span`
+export const WrapperTextHeader = styled.a`
     color: white;
     font-size: 18px;
     font-weight: bold;
     text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    &:hover{
+        color: white !important;
+    }
 `
 
 export const WrapperHeaderAccount = styled.div`
@@ -24,6 +29,14 @@ export const WrapperHeaderAccount = styled.div`
     gap: 10px;
 `
 
-
+export const WrapperContentPopover = styled.p`
+    cursor: pointer;
+    margin: 0;
+    padding: 5px 10px;
+    &:hover {
+        background-color: #f0f0f0;
+        color: rgb(26,148,255);
+    }
+`
 
 

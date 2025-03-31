@@ -5,7 +5,7 @@ import DefaultComponent from './components/DefaultComponent/DefaultComponent';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { jwtDecode } from 'jwt-decode';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateUser } from './redux/slices/userSlice';
 import * as UserService from './services/UserService';
 
@@ -14,6 +14,8 @@ import { isJsonString } from './untils';
 
 function App() {
   const dispatch = useDispatch()
+  const user = useSelector((state) => state.user)
+
   useEffect(() => {
     const { decoded, storageData } = handleDecode()
     if (decoded?.id) {
@@ -37,7 +39,10 @@ function App() {
     if (decoded?.exp < currentTime) {
       try {
         const data = await UserService.refreshToken();
-        config.headers['token'] = `Bearer ${data?.access_token}`;
+        const newAccessToken = data?.access_token;
+        config.headers['token'] = `Bearer ${newAccessToken}`;
+        localStorage.setItem('access_token', JSON.stringify(newAccessToken));
+        dispatch(updateUser({ access_token: newAccessToken }));
       } catch (error) {
         localStorage.removeItem('access_token');
         toast.warning("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
@@ -53,7 +58,6 @@ function App() {
   const handleGetDetailUser = async (id, token) => {
     const res = await UserService.getDetailUser(id, token)
     dispatch(updateUser({ ...res?.data, access_token: token }))
-    // console.log("check res", res)
   }
 
   return (
@@ -62,6 +66,7 @@ function App() {
         <Routes>
           {
             routes.map((route, index) => {
+              const isCheckAuth = !route.isPrivate
               const Layout = route.isShowHeader ? DefaultComponent : React.Fragment
               return (
                 < Route

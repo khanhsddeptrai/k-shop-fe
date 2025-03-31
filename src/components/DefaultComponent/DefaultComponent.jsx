@@ -4,7 +4,7 @@ import HeaderComponent from "../HeaderComponent/HeaderComponent";
 const DefaultComponent = ({ children }) => {
     return (
         <div>
-            <HeaderComponent />
+            <HeaderComponent isHiddenSearch={false} isHiddenCart={false} />
             {children}
         </div>
     )

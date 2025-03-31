@@ -13,7 +13,7 @@ import * as UserService from '../../services/UserService';
 import Loading from "../../components/Loading/Loading";
 import { toast } from "react-toastify";
 
-const HeaderComponent = () => {
+const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
     const [isPending, setIsPending] = useState(false)
     const [userName, setUserName] = useState("")
     const [avatar, setAvatar] = useState("")
@@ -48,9 +48,18 @@ const HeaderComponent = () => {
         navigate('/profile');
     };
 
+    const handleNavigateAdminPage = () => {
+        setPopoverVisible(false);
+        navigate('/system/admin');
+    };
+
     const content = (
         <div>
             <WrapperContentPopover onClick={handleNavigateProfile}>Thông tin người dùng</WrapperContentPopover>
+            {
+                user?.role.name === "admin" &&
+                <WrapperContentPopover onClick={handleNavigateAdminPage}>Quản trị hệ thống</WrapperContentPopover>
+            }
             <WrapperContentPopover onClick={handleLogout}>Đăng xuất</WrapperContentPopover>
         </div>
     )
@@ -61,9 +70,16 @@ const HeaderComponent = () => {
                 <Col span={3}>
                     <WrapperTextHeader href="/">K-SHOP</WrapperTextHeader>
                 </Col>
-                <Col span={13} >
-                    <ButtonInputSearch size="large" placeholder="Tìm sản phẩm" textButton="Tìm kiếm" />
-                </Col>
+                {isHiddenSearch === false ?
+                    <Col span={13} >
+                        <ButtonInputSearch size="large" placeholder="Tìm sản phẩm" textButton="Tìm kiếm" />
+                    </Col>
+                    :
+                    <Col span={13} >
+
+                    </Col>
+                }
+
                 <Col span={8} >
                     <Loading isPending={isPending}>
                         <WrapperHeaderAccount>
@@ -105,16 +121,18 @@ const HeaderComponent = () => {
                                         <CaretDownOutlined />
                                     </div>
                                 </div>}
+                            {isHiddenCart === false &&
+                                <WrapperHeaderAccount >
+                                    <Badge count={5} size="small">
+                                        <ShoppingCartOutlined style={{ fontSize: "30px", color: "#fff" }} />
+                                    </Badge>
+                                    <span
+                                        style={{ cursor: "pointer", display: "block", width: "80px" }}
+                                    >Giỏ hàng
+                                    </span>
+                                </WrapperHeaderAccount>
+                            }
 
-                            <WrapperHeaderAccount >
-                                <Badge count={5} size="small">
-                                    <ShoppingCartOutlined style={{ fontSize: "30px", color: "#fff" }} />
-                                </Badge>
-                                <span
-                                    style={{ cursor: "pointer", display: "block", width: "80px" }}
-                                >Giỏ hàng
-                                </span>
-                            </WrapperHeaderAccount>
 
                         </WrapperHeaderAccount>
                     </Loading>

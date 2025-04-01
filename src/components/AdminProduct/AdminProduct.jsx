@@ -10,11 +10,14 @@ import {
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux'; // Thêm useSelector để lấy token
 import { getBase64 } from '../../untils';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const { Option } = Select;
 const { TextArea } = Input;
 
 const AdminProduct = () => {
+    const navigate = useNavigate()
+    const location = useLocation()
     const [isModalCreateOpen, setIsModalCreateOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -39,6 +42,14 @@ const AdminProduct = () => {
     const [editForm] = Form.useForm();
 
     const { access_token } = useSelector(state => state.user); // Lấy token từ Redux
+
+    const getQueryParams = () => {
+        const params = new URLSearchParams(location.search);
+        return {
+            page: parseInt(params.get('page')) || 1,
+            limit: parseInt(params.get('limit')) || 4,
+        };
+    };
 
     const initialValues = {
         name: "",
@@ -110,12 +121,14 @@ const AdminProduct = () => {
                         icon={<EyeOutlined />}
                         onClick={() => handleViewDetail(record)}
                         title="Xem chi tiết"
+                        style={{ fontSize: "17px" }}
                     />
                     <Button
                         type="link"
                         icon={<EditOutlined />}
                         onClick={() => handleEdit(record)}
                         title="Sửa"
+                        style={{ fontSize: "17px" }}
                     />
                     <Button
                         type="link"
@@ -123,6 +136,7 @@ const AdminProduct = () => {
                         onClick={() => handleDelete(record.key)}
                         danger
                         title="Xóa"
+                        style={{ fontSize: "17px" }}
                     />
                 </div>
             ),
@@ -164,18 +178,22 @@ const AdminProduct = () => {
     };
 
     useEffect(() => {
+        const { page, limit } = getQueryParams();
+        setCurrentPage(page);
+        setPageSize(limit);
         const loadData = async () => {
             await fetchCategories();
-            await fetchProducts();
+            await fetchProducts(page, limit);
         };
         loadData();
-    }, []);
+    }, [location.search]);
 
     const handleTableChange = (pagination) => {
         const { current, pageSize: newPageSize } = pagination;
         setCurrentPage(current);
         setPageSize(newPageSize);
-        fetchProducts(current, newPageSize);
+        // fetchProducts(current, newPageSize);
+        navigate(`/system/admin/product?page=${current}&limit=${newPageSize}`);
     };
 
     const onFinish = async (values) => {

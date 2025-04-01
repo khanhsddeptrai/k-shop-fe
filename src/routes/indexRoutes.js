@@ -51,7 +51,7 @@ export const routes = [
         isShowHeader: true
     },
     {
-        path: "/system/admin",
+        path: "/system/admin*",
         page: Admin,
         isShowHeader: false,
         isPrivate: true

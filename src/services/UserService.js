@@ -13,6 +13,13 @@ export const signupUser = async (data) => {
     return response.data;
 }
 
+export const getAllUser = async ({ page = 1, limit = 4 } = {}) => {
+    const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/getAll`, {
+        params: { page, limit }
+    });
+    return response.data;
+};
+
 export const getDetailUser = async (id, access_token) => {
     const response = await axiosJWT.get(`${process.env.REACT_APP_URL_BACKEND}/user/get-detail/${id}`, {
         headers: {
@@ -24,6 +31,20 @@ export const getDetailUser = async (id, access_token) => {
 
 export const updateUser = async (id, data, access_token) => {
     const response = await axiosJWT.put(`${process.env.REACT_APP_URL_BACKEND}/user/update-user/${id}`, data, {
+        headers: {
+            token: `Bearer ${access_token}`
+        }
+    });
+    return response.data;
+}
+
+export const addNewUser = async (product) => {
+    const response = await axios.post(`${process.env.REACT_APP_URL_BACKEND}/user/create`, product);
+    return response.data;
+}
+
+export const deleteUser = async (id, access_token) => {
+    const response = await axios.delete(`${process.env.REACT_APP_URL_BACKEND}/user/delete/${id}`, {
         headers: {
             token: `Bearer ${access_token}`
         }

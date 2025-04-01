@@ -36,27 +36,29 @@ const Profile = () => {
 
     const { data, isPending } = mutation;
 
+    // Xử lý cập nhật sau khi mutation thành công
     useEffect(() => {
         if (data?.status === "success") {
-            // Cập nhật Redux store với dữ liệu từ server
             const updatedUser = { ...data.data, access_token: user.access_token };
             dispatch(updateUser(updatedUser));
-            // Cập nhật state selectedRoleId để UI phản ánh thay đổi
-            setSelectedRoleId(data.data.role); // Giả sử data.data.role là ObjectId
+            setSelectedRoleId(data.data.role); // Đồng bộ role từ server
             toast.success(data.message);
         } else if (data?.status === "ERR") {
             toast.error(data.message);
         }
-    }, [data]);
+    }, [data, dispatch, user.access_token]);
 
+    // Đồng bộ dữ liệu từ Redux store khi user thay đổi
     useEffect(() => {
         setEmail(user?.email || "");
         setName(user?.name || "");
         setPhone(user?.phone || "");
         setAvatar(user?.avatar || "");
-        setSelectedRoleId(user?.role || ""); // Đồng bộ với role từ Redux
+        // Đảm bảo selectedRoleId khớp với user.role (chuỗi ObjectId hoặc _id từ object)
+        setSelectedRoleId(user?.role?._id || user?.role || "");
     }, [user]);
 
+    // Lấy danh sách role
     useEffect(() => {
         handleGetAllRole();
     }, []);
@@ -130,13 +132,13 @@ const Profile = () => {
                             <WrapperLabel htmlFor='role'>Quyền</WrapperLabel>
                             <select
                                 id="role"
-                                value={selectedRoleId}
+                                value={selectedRoleId} // Giá trị được chọn dựa trên selectedRoleId
                                 onChange={handleOnchangeRole}
                                 style={{ padding: '8px', width: '200px' }}
                             >
                                 {roles.length > 0 ? (
                                     roles.map((role) => (
-                                        <option key={role._id} value={role._id} selected>
+                                        <option key={role._id} value={role._id}>
                                             {role.name}
                                         </option>
                                     ))

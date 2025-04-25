@@ -11,10 +11,10 @@ const initialState = {
 }
 
 export const userSlice = createSlice({
-    name: 'counter',
+    name: 'user',
     initialState,
     reducers: {
-        updateUser: (state, action) => {
+        updateUserRedux: (state, action) => {
             const { name = "", email = "", phone = "", role = "", avatar = "", access_token = "", _id = "" } = action.payload
             state.id = _id
             state.name = name || email
@@ -36,7 +36,6 @@ export const userSlice = createSlice({
     },
 })
 
-// Action creators are generated for each case reducer function
-export const { updateUser, resetUser } = userSlice.actions
+export const { updateUserRedux, resetUser } = userSlice.actions
 
 export default userSlice.reducer

@@ -1,0 +1,18 @@
+.ant-table-thead>tr>th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.ant-table-tbody>tr>td {
+    vertical-align: middle;
+}
+
+.ant-btn-primary {
+    background-color: #ff4d4f;
+    border-color: #ff4d4f;
+}
+
+.ant-btn-primary:hover {
+    background-color: #ff7875;
+    border-color: #ff7875;
+}

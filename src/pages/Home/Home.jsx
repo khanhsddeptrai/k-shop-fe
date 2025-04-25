@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TypeProduct from "../../components/TypeProduct/TypeProduct";
 import { WrapperTypeProduct, WrapperLoadMoreButoon, WrapperProducts } from "./style";
 import SliderComponent from "../../components/SliderComponent/SliderComponent";
@@ -7,37 +7,80 @@ import slider2 from "../../assets/images/slider2.jpg";
 import slider3 from "../../assets/images/slider3.jpg";
 import CardComponent from "../../components/CardComponent/CardComponent";
 import { useQuery } from "@tanstack/react-query";
-import * as ProductService from '../../services/ProductService'
+import * as ProductService from "../../services/ProductService";
+import * as CategoryService from "../../services/CategoryService";
+import Loading from "../../components/Loading/Loading";
 
 const Home = () => {
-    const typeProduct = ['TV', 'Laptop', 'Điện thoại', 'Máy ảnh', 'Máy lạnh', 'Máy giặt', 'Tủ lạnh'];
-    const fetchAllProduct = async () => {
-        const res = await ProductService.getAllProduct()
-        return res
-    }
+    const [limit, setLimit] = useState(8);
+    const [productsList, setProductsList] = useState([]);
+    const [categories, setCategories] = useState([]);
 
-    const { isPending, data: products } = useQuery({
-        queryKey: ['products'],
+    // Lấy danh sách sản phẩm
+    const fetchAllProduct = async (context) => {
+        const limit = context?.queryKey && context?.queryKey[1];
+        const res = await ProductService.getAllProduct({ limit });
+        return res;
+    };
+
+    // Lấy danh sách danh mục
+    const fetchAllCategory = async () => {
+        const res = await CategoryService.getAllCategory();
+        return res;
+    };
+
+    // Query cho sản phẩm
+    const { isFetching: isFetchingProducts, data: products } = useQuery({
+        queryKey: ["products", limit],
         queryFn: fetchAllProduct,
         retry: 3,
-        retryDelay: 1000
-    })
-    console.log("data: ", products)
+        retryDelay: 1000,
+        keepPreviousData: true,
+    });
+
+    // Query cho danh mục
+    const { isFetching: isFetchingCategories, data: categoryData } = useQuery({
+        queryKey: ["categories"],
+        queryFn: fetchAllCategory,
+        retry: 3,
+        retryDelay: 1000,
+        keepPreviousData: true,
+    });
+
+    // Cập nhật danh sách sản phẩm
+    useEffect(() => {
+        if (products?.data) {
+            setProductsList(products.data);
+        }
+    }, [products]);
+
+    // Cập nhật danh sách danh mục
+    useEffect(() => {
+        if (categoryData?.data) {
+            setCategories(categoryData.data);
+        }
+    }, [categoryData]);
 
     return (
         <>
             <div style={{ padding: "0 120px", display: "flex" }}>
                 <WrapperTypeProduct>
-                    {typeProduct.map((item, index) => {
-                        return <TypeProduct key={index} name={item} />;
-                    })}
+                    {isFetchingCategories ? (
+                        <Loading />
+                    ) : categories.length > 0 ? (
+                        categories.map((category) => (
+                            <TypeProduct id={category._id} name={category.name} />
+                        ))
+                    ) : (
+                        <div>Không có danh mục nào</div>
+                    )}
                 </WrapperTypeProduct>
             </div>
-            <div id="container" style={{ maxWidth: "1000px", background: "#efefef", padding: "0 210px", height: "1505px" }}>
+            <div id="container" style={{ maxWidth: "1000px", background: "#efefef", padding: "0 210px", height: "1505px", margin: "0 auto" }}>
                 <SliderComponent arrImage={[slider1, slider2, slider3]} />
                 <WrapperProducts>
-                    {products?.data?.map((product) => {
-                        return (
+                    {productsList?.length > 0 ? (
+                        productsList.map((product) => (
                             <CardComponent
                                 key={product._id}
                                 countInStock={product.countInStock}
@@ -48,23 +91,30 @@ const Home = () => {
                                 category={product.category}
                                 discount={product.discount}
                                 rating={product.rating}
+                                id={product._id}
                             />
-                        )
-                    })}
+                        ))
+                    ) : (
+                        !isFetchingProducts && <div>Không có sản phẩm nào</div>
+                    )}
                 </WrapperProducts>
-                <div style={{ textAlign: "center" }}>
-                    <WrapperLoadMoreButoon color="primary" variant="outlined">
-                        <span>Xem thêm</span>
-                    </WrapperLoadMoreButoon>
+                <div style={{ textAlign: "center", marginTop: "20px" }}>
+                    {isFetchingProducts && <Loading />}
+                    {!isFetchingProducts && (
+                        <WrapperLoadMoreButoon
+                            color="primary"
+                            variant="outlined"
+                            disabled={productsList?.length >= products?.totalProduct}
+                        >
+                            <span onClick={() => setLimit((prev) => prev + 5)}>
+                                Xem thêm
+                            </span>
+                        </WrapperLoadMoreButoon>
+                    )}
                 </div>
-                {/* <div>
-                    <NavbarComponent />
-                </div> */}
             </div>
-
         </>
-
-    )
-}
+    );
+};
 
 export default Home;

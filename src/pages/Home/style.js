@@ -11,7 +11,7 @@ export const WrapperTypeProduct = styled.div`
 `
 
 export const WrapperLoadMoreButoon = styled(Button)`
-    width: 240px;
+    width: 100px;
     height: 35px;
     padding: 4px;
     fontSize: 12px;
@@ -24,6 +24,9 @@ export const WrapperLoadMoreButoon = styled(Button)`
     &:hover span {
         color: white;
     }
+    &:disabled {
+    pointer-events: none; /* Ngăn mọi sự kiện chuột */
+  }
 
 `
 

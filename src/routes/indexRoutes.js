@@ -8,6 +8,12 @@ import SignIn from "../pages/SignIn/SignIn"
 import SignUp from "../pages/SignUp/SignUp"
 import Profile from "../pages/Profile/Profile"
 import Admin from "../pages/Admin/Admin"
+import Cart from "../pages/Cart/Cart"
+import Checkout from "../pages/Checkout/Checkout"
+import MyOrder from "../pages/MyOrder/MyOrder"
+import OrderDetail from "../pages/OrderDetail/OrderDetail"
+import SearchResult from "../pages/SearchResult/SearchResult"
+import HeaderTest from "../pages/HeaderTest"
 
 export const routes = [
     {
@@ -21,12 +27,37 @@ export const routes = [
         isShowHeader: true
     },
     {
+        path: "/search",
+        page: SearchResult,
+        isShowHeader: true
+    },
+    {
         path: "/orders",
         page: Order,
         isShowHeader: true
     },
     {
-        path: "/type",
+        path: "/cart",
+        page: Cart,
+        isShowHeader: true
+    },
+    {
+        path: "/my-order",
+        page: MyOrder,
+        isShowHeader: true
+    },
+    {
+        path: "/detail/:id",
+        page: OrderDetail,
+        isShowHeader: true
+    },
+    {
+        path: "/CheckOut",
+        page: Checkout,
+        isShowHeader: true
+    },
+    {
+        path: "/category/:categoryId",
         page: TypeProducts,
         isShowHeader: true
     },
@@ -46,8 +77,13 @@ export const routes = [
         isShowHeader: true
     },
     {
-        path: "/product-detail",
+        path: "/product-detail/:id",
         page: ProductDetail,
+        isShowHeader: true
+    },
+    {
+        path: "/test",
+        page: HeaderTest,
         isShowHeader: true
     },
     {

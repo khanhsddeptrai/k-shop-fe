@@ -1,5 +1,6 @@
 import { Button, Col } from "antd";
 import styled from "styled-components";
+import { InputNumber } from "antd";
 
 export const WrapperStyleColImage = styled(Col)`
     flex-bacis: unset;
@@ -71,7 +72,16 @@ export const WrapperPlusMinusButton = styled(Button)`
     border-radius: 4px;
     background: transparent;
     color: #000;
-    $.ant-input-number-handler-wrap{
-        display: none;
-    }
+   
 `
+
+export const WrapperInputNumberQuantity = styled(InputNumber)`
+    width: 30px;
+    height: 24px;
+
+    &.ant-input-number.ant-input-number-sm {
+        .ant-input-number-handler-wrap {
+            display: none !important;
+        }
+    }
+`;

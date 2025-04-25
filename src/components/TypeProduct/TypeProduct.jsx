@@ -1,8 +1,17 @@
 import React from 'react'
+import { WrapperSubheader } from './style'
+import { useNavigate } from 'react-router-dom';
 
-const TypeProduct = ({ name }) => {
+
+const TypeProduct = ({ id, name }) => {
+    const navigate = useNavigate();
+    const handleNavigateDetailCategory = () => {
+        navigate(`/category/${id}`);
+    }
     return (
-        <div style={{ padding: "0 10px", fontSize: "16px" }}>{name}</div>
+        <WrapperSubheader onClick={handleNavigateDetailCategory}>
+            {name}
+        </WrapperSubheader>
     )
 }
 

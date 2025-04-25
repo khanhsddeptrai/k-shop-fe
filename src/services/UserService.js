@@ -52,6 +52,16 @@ export const deleteUser = async (id, access_token) => {
     return response.data;
 }
 
+export const deleteManyUser = async (data, token) => {
+    const response = await axiosJWT.delete(`${process.env.REACT_APP_URL_BACKEND}/user/delete-many`, {
+        headers: {
+            token: `Bearer ${token}`
+        },
+        data: data
+    });
+    return response.data;
+};
+
 export const refreshToken = async () => {
     const response = await axios.post(`${process.env.REACT_APP_URL_BACKEND}/user/refresh-token`, {}, {
         withCredentials: true

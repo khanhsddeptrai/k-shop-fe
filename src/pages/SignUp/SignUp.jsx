@@ -11,6 +11,7 @@ import * as UserService from '../../services/UserService';
 
 import { useMutationHook } from '../../hooks/useMutationHook';
 import Loading from '../../components/Loading/Loading';
+import { toast } from 'react-toastify'
 
 const SignUp = () => {
     const [isShowPassword, setIsShowPassword] = useState(false)
@@ -39,6 +40,13 @@ const SignUp = () => {
 
     const handleSignUp = () => {
         mutation.mutate({ email, password, confirmPassword })
+        if (data?.status === "success") {
+            toast.success(data.message)
+            naviagte('/sign-in')
+        } else {
+            toast.error(data.message)
+        }
+
     }
 
     return (
@@ -78,10 +86,6 @@ const SignUp = () => {
                             handleOnchange={handleOnchangeConfirmPassword}
                         />
                     </div>
-
-                    {data?.status === 'ERR' ? <span style={{ color: "red" }}>{data?.message}</span>
-                        : <span style={{ color: "green" }}>{data?.message}</span>
-                    }
                     <Loading isPending={isPending}>
                         <Button
                             style={{

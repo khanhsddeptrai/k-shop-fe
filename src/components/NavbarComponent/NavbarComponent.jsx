@@ -1,83 +1,44 @@
-import React from 'react'
-import { WrapperLabelText, WrapperTextValue, WrapperContent } from './style'
-import { Checkbox, Rate } from 'antd'
+import React from 'react';
+import { Checkbox } from 'antd';
+import { PriceOption, WrapperContent, WrapperLabelText } from './style';
+
 
 const NavbarComponent = () => {
-    const onChange = () => { }
+    const onChange = (e) => {
+        console.log(`checked = ${e.target.checked}`);
+        // Bạn có thể thêm logic xử lý khi checkbox được chọn tại đây
+    };
+
+    const priceOptions = [
+        'Dưới 1.000.000đ',
+        '1.000.000đ - 2.000.000đ',
+        '2.000.000đ - 3.000.000đ',
+        '3.000.000đ - 4.000.000đ',
+        'Trên 4.000.000đ',
+    ];
+
     const renderContent = (type, options) => {
         switch (type) {
-            case 'text':
-                return options.map((option) => {
-                    return (
-                        <WrapperTextValue>{option}</WrapperTextValue>
-                    )
-                })
-            case 'checkbox':
-                return (
-                    <Checkbox.Group
-                        style={{
-                            width: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                        }}
-                        onChange={onChange}
-                    >
-                        {options.map((option) => {
-                            return (
-                                <Checkbox value={option.value}>{option.label}</Checkbox>
-                            )
-                        })}
-                    </Checkbox.Group>
-                )
-            case 'start':
-                return (
-                    options.map((option) => {
-                        return (
-                            <div style={{ display: 'flex', alignItems: 'center', fontSize: "12px", gap: "8px" }}>
-                                <Rate style={{ fontSize: "14px" }} allowHalf defaultValue={option} />
-                                <span>Từ {option} sao</span>
-                            </div>
-                        )
-                    })
-                )
-
             case 'price':
-                return (
-                    options.map((option) => {
-                        return (
-                            <div style={{
-                                borderRadius: "30px",
-                                backgroundColor: "gray",
-                                width: "150px",
-                                padding: "4px",
-                                fontSize: "12px",
-                                color: "rgb(56,56,61)",
-                            }}>
-                                {option}
-                            </div>
-                        )
-                    })
-                )
+                return options.map((option, index) => (
+                    <PriceOption key={index}>
+                        <Checkbox onChange={onChange} />
+                        <span style={{ marginLeft: '8px' }}>{option}</span>
+                    </PriceOption>
+                ));
             default:
-                return []
+                return [];
         }
-    }
+    };
+
     return (
         <div>
-            <WrapperLabelText>Danh mục</WrapperLabelText>
+            <WrapperLabelText>Lọc giá</WrapperLabelText>
             <WrapperContent>
-                {renderContent('text', ['Điện thoại', 'Máy tính', 'Máy ảnh', 'Máy giặt', 'Tủ lạnh'])}
-                {renderContent('checkbox', [
-                    { label: 'A', value: 'A' },
-                    { label: 'B', value: 'B' },
-                    { label: 'C', value: 'C' }
-                ])}
-                {renderContent('start', [3, 4, 5])}
-                {renderContent('price', ["400.000đ - 1.000.000đ", "1.000.000đ - 2.000.000đ", "Trên 2.000.000đ"])}
+                {renderContent('price', priceOptions)}
             </WrapperContent>
-
         </div>
-    )
-}
+    );
+};
 
-export default NavbarComponent
+export default NavbarComponent;

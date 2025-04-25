@@ -1,0 +1,7 @@
+.ant-card {
+    transition: transform 0.2s;
+}
+
+.ant-card:hover {
+    transform: translateY(-5px);
+}

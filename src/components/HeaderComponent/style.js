@@ -39,4 +39,32 @@ export const WrapperContentPopover = styled.p`
     }
 `
 
+export const SuggestionsWrapper = styled.div`
+    max-height: 300px;
+    overflow-y: auto;
+    width: 450px;
+    background: #fff;
+    border-radius: 4px;
+    z-index: 1000;
+    position: relative;
+`;
+
+export const SuggestionItem = styled.div`
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+    &:hover {
+        background: #f5f5f5;
+    }
+`;
+
+export const SuggestionImage = styled.img`
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+`;
 

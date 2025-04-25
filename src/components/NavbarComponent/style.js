@@ -1,30 +1,22 @@
 import styled from "styled-components";
 
-export const WrapperLabelText = styled.h4`
-    color: "rgb(56, 56,61)";
-    fontweight: 500;
-    font-size: 16px;
-`
-export const WrapperTextValue = styled.span`
-    color: "rgb(56, 56,61)";
-    fontweight: 400;
-    font-size: 12px;
-`
+export const WrapperLabelText = styled.div`
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: #000;
+`;
 
 export const WrapperContent = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    
-`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
 
-// export const WrapperNavbarPrice = styled.div`
-//     borderRadius: "30px";
-//     background: "rbg(238,238,238)";
-//     width: "150px";
-//     padding: "4px";
-//     fontSize: "12px";
-//     color: "rgb(56,56,61)";
-
-// `
-
+export const PriceOption = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: rgb(56, 56, 61);
+  padding: 4px 0;
+`;

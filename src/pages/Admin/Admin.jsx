@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { AppstoreOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { BarsOutlined, BorderOuterOutlined, FormOutlined, HomeOutlined, MinusSquareOutlined, ProductOutlined, UserOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom'; // Thêm import
 import HeaderComponent from '../../components/HeaderComponent/HeaderComponent';
 import AdminUser from '../../components/AdminUser/AdminUser';
 import AdminProduct from '../../components/AdminProduct/AdminProduct';
+import AdminStockImport from '../../components/AdminStockImport/AdminStockImport';
+import AdminCategory from '../../components/AdminCategory/AdminCategory';
+import AdminOrders from '../../components/AdminOrders/AdminOrders';
+import AdminDashboard from '../../components/AdminDashboard/AdminDashboard';
+import { WrapperRowSelected } from './style';
+import AdminVoucher from '../../components/AdminVoucher/AdminVoucher';
 
 const Admin = () => {
     const location = useLocation(); // Lấy thông tin URL
@@ -17,8 +23,17 @@ const Admin = () => {
             return 'product';
         } else if (location.pathname.includes('/system/admin/users')) {
             return 'user';
+        } else if (location.pathname.includes('/system/admin/stock-import')) {
+            return 'stock-import';
+        } else if (location.pathname.includes('/system/admin/category')) {
+            return 'category';
+        } else if (location.pathname.includes('/system/admin/orders')) {
+            return 'orders';
+        } else if (location.pathname.includes('/system/admin/voucher')) {
+            return 'voucher';
         }
-        return 'user'; // Mặc định
+
+        return 'dashboard'; // Mặc định
     };
 
     const [selectedKey, setSelectedKey] = useState(getInitialSelectedKey);
@@ -30,10 +45,20 @@ const Admin = () => {
 
     const renderPage = (key) => {
         switch (key) {
+            case 'dashboard':
+                return <AdminDashboard />;
             case 'user':
                 return <AdminUser />;
             case 'product':
                 return <AdminProduct />;
+            case 'stock-import':
+                return <AdminStockImport />;
+            case 'category':
+                return <AdminCategory />;
+            case 'orders':
+                return <AdminOrders />;
+            case 'voucher':
+                return <AdminVoucher />;
             default:
                 return <></>;
         }
@@ -42,22 +67,38 @@ const Admin = () => {
     const handleOnClick = ({ key }) => {
         setSelectedKey(key);
         switch (key) {
+            case 'dashboard':
+                navigate('/system/admin/dashboard');
+                break;
             case 'product':
                 navigate('/system/admin/products');
                 break;
             case 'user':
                 navigate('/system/admin/users');
                 break;
-            // case '3':
-            //     navigate('/system/admin/3');
-            //     break;
+            case 'stock-import':
+                navigate('/system/admin/stock-import');
+                break;
+            case 'category':
+                navigate('/system/admin/category');
+                break;
+            case 'orders':
+                navigate('/system/admin/orders');
+                break;
+            case 'voucher':
+                navigate('/system/admin/voucher');
+                break;
         }
     };
 
     const items = [
+        { key: 'dashboard', icon: <HomeOutlined />, label: 'Quản lí chung' },
         { key: 'user', icon: <UserOutlined />, label: 'Người dùng' },
-        { key: 'product', icon: <AppstoreOutlined />, label: 'Sản phẩm' },
-        { key: '3', icon: <SettingOutlined />, label: 'Navigation Three' },
+        { key: 'product', icon: <ProductOutlined />, label: 'Sản phẩm' },
+        { key: 'stock-import', icon: <FormOutlined />, label: 'Chi tiết nhập kho' },
+        { key: 'category', icon: <BarsOutlined />, label: 'Danh mục sản phẩm' },
+        { key: 'orders', icon: <BorderOuterOutlined />, label: 'Đơn hàng' },
+        { key: 'voucher', icon: <MinusSquareOutlined />, label: 'Mã giảm giá' }
     ];
 
     const getLevelKeys = (items1) => {
@@ -97,7 +138,7 @@ const Admin = () => {
         <>
             <HeaderComponent isHiddenSearch={true} isHiddenCart={true} />
             <div style={{ display: 'flex' }}>
-                <Menu
+                <WrapperRowSelected
                     mode="inline"
                     openKeys={stateOpenKeys}
                     onOpenChange={onOpenChange}
@@ -108,6 +149,7 @@ const Admin = () => {
                         boxShadow: '1px 1px 2px #ccc',
                         height: '100vh',
                         borderRight: 'none',
+                        background: ''
                     }}
                     items={items}
                     className="custom-menu"
@@ -116,17 +158,6 @@ const Admin = () => {
                     {renderPage(selectedKey)}
                 </div>
             </div>
-
-            <style jsx global>{`
-                .custom-menu .ant-menu-item-selected {
-                    border-right: 3px solid #1890ff !important;
-                    border-radius: 0 !important;
-                }
-                .custom-menu .ant-menu-item {
-                    margin-right: 0 !important;
-                    border-radius: 0 !important;
-                }
-            `}</style>
         </>
     );
 };

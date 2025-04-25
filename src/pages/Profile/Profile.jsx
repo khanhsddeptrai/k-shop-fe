@@ -14,7 +14,7 @@ import * as UserService from '../../services/UserService';
 import { useMutationHook } from '../../hooks/useMutationHook';
 import Loading from '../../components/Loading/Loading';
 import { toast } from 'react-toastify';
-import { updateUser } from '../../redux/slices/userSlice';
+import { updateUserRedux } from '../../redux/slices/userSlice';
 import { Button } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { getBase64 } from '../../untils';
@@ -40,7 +40,7 @@ const Profile = () => {
     useEffect(() => {
         if (data?.status === "success") {
             const updatedUser = { ...data.data, access_token: user.access_token };
-            dispatch(updateUser(updatedUser));
+            dispatch(updateUserRedux(updatedUser));
             setSelectedRoleId(data.data.role); // Đồng bộ role từ server
             toast.success(data.message);
         } else if (data?.status === "ERR") {

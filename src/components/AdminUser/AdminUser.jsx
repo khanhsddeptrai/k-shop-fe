@@ -5,21 +5,34 @@ import { PlusSquareTwoTone, EditOutlined, DeleteOutlined, EyeOutlined, UploadOut
 import TableComponent from '../TableComponent/TableComponent';
 import { Button, Form, Input, Modal, Select, Upload } from 'antd';
 import {
-    getAllUser, updateUser, getAllRole, addNewUser, deleteUser
+    getAllUser, updateUser, getAllRole, addNewUser, deleteUser,
+    deleteManyUser
 } from '../../services/UserService';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import { getBase64 } from '../../untils';
+import { useMutationHook } from '../../hooks/useMutationHook';
+import Loading from '../../components/Loading/Loading';
 
 const { Option } = Select;
 
 const AdminUser = () => {
     const location = useLocation();
     const navigate = useNavigate();
+
+    const getQueryParams = () => {
+        const params = new URLSearchParams(location.search);
+        return {
+            page: parseInt(params.get('page')) || 1,
+            limit: parseInt(params.get('limit')) || 4,
+        };
+    };
+
     const [isModalCreateOpen, setIsModalCreateOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleteManyModalOpen, setIsDeleteManyModalOpen] = useState(false);
     const [stateUser, setStateUser] = useState({
         name: "",
         email: "",
@@ -36,18 +49,10 @@ const AdminUser = () => {
     const [roles, setRoles] = useState([]);
     const [totalUsers, setTotalUsers] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
-
-    // Phân trang
-    const getQueryParams = () => {
-        const params = new URLSearchParams(location.search);
-        return {
-            page: parseInt(params.get('page')) || 1,
-            limit: parseInt(params.get('limit')) || 4,
-        };
-    };
-
     const [currentPage, setCurrentPage] = useState(getQueryParams().page);
     const [pageSize, setPageSize] = useState(getQueryParams().limit);
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    const [isTableLoading, setIsTableLoading] = useState(false);
 
     const [form] = Form.useForm();
     const [editForm] = Form.useForm();
@@ -63,11 +68,74 @@ const AdminUser = () => {
         confirmPassword: ""
     };
 
+    // Mutation hooks
+    const mutationAdd = useMutationHook(data => addNewUser(data));
+    const mutationUpdate = useMutationHook(data => {
+        const { id, access_token, ...rests } = data;
+        return updateUser(id, rests, access_token);
+    });
+    const mutationDelete = useMutationHook(data => {
+        const { id, access_token } = data;
+        return deleteUser(id, access_token);
+    });
+    const mutationDeleteManyUser = useMutationHook(data => {
+        const { ids, access_token } = data;
+        return deleteManyUser(ids, access_token);
+    });
+
+    const { data: addData, isPending: isAdding } = mutationAdd;
+    const { data: updateData, isPending: isUpdating } = mutationUpdate;
+    const { data: deleteData, isPending: isDeleting } = mutationDelete;
+    const { data: deleteManyData, isPending } = mutationDeleteManyUser;
+
+    // Xử lý kết quả từ mutation
+    useEffect(() => {
+        if (addData?.status === 'success') {
+            toast.success(addData.message);
+            setIsModalCreateOpen(false);
+            form.resetFields();
+            fetchUsers(currentPage, pageSize);
+        } else if (addData?.status === 'ERR') {
+            toast.error(addData.message);
+        }
+    }, [addData]);
+
+    useEffect(() => {
+        if (updateData?.status === 'success') {
+            toast.success(updateData.message);
+            setIsEditModalOpen(false);
+            editForm.resetFields();
+            fetchUsers(currentPage, pageSize);
+        } else if (updateData?.status === 'ERR') {
+            toast.error(updateData.message);
+        }
+    }, [updateData]);
+
+    useEffect(() => {
+        if (deleteData?.status === 'success') {
+            toast.success(deleteData.message);
+            setIsDeleteModalOpen(false);
+            setDeleteUserId(null);
+            fetchUsers(currentPage, pageSize);
+        } else if (deleteData?.status === 'ERR') {
+            toast.error(deleteData.message);
+        }
+    }, [deleteData]);
+
+    useEffect(() => {
+        if (deleteManyData?.status === 'success') {
+            toast.success(deleteManyData.message);
+            setSelectedRowKeys([]);
+            fetchUsers(currentPage, pageSize);
+        } else if (deleteManyData?.status === 'ERR') {
+            toast.error(deleteManyData.message);
+        }
+    }, [deleteManyData])
+
     // Lấy danh sách role
     const fetchRoles = async () => {
         try {
             const response = await getAllRole();
-            console.log('Roles fetched:', response.data);
             setRoles(response.data || []);
         } catch (error) {
             console.error('Failed to fetch roles:', error);
@@ -77,9 +145,9 @@ const AdminUser = () => {
 
     // Lấy danh sách người dùng
     const fetchUsers = async (page = currentPage, limit = pageSize) => {
+        setIsTableLoading(true)
         try {
             const response = await getAllUser({ page, limit });
-            console.log('Users fetched:', response.data);
             setUsers(response.data || []);
             setTotalUsers(response.totalUser || 0);
             setTotalPages(response.totalPage || 0);
@@ -87,6 +155,8 @@ const AdminUser = () => {
         } catch (error) {
             console.error('Failed to fetch users:', error);
             setUsers([]);
+        } finally {
+            setIsTableLoading(false)
         }
     };
 
@@ -127,24 +197,45 @@ const AdminUser = () => {
         setIsDeleteModalOpen(true);
     };
 
-    // Cột của bảng
+    // Hàm xử lý khi chọn hàng
+    const onSelectChange = (newSelectedRowKeys) => {
+        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+        setSelectedRowKeys(newSelectedRowKeys);
+    };
+
+    const rowSelection = {
+        selectedRowKeys,
+        onChange: onSelectChange,
+    };
+
     const columns = [
+        {
+            title: 'STT',
+            dataIndex: 'index',
+            width: '5%',
+            render: (_, __, index) => index + 1 + (currentPage - 1) * pageSize,
+        },
         {
             title: 'Tên người dùng',
             dataIndex: 'name',
-            width: '20%',
+            width: '15%',
             render: (text) => <a>{text}</a>,
         },
         {
             title: 'Email',
             dataIndex: 'email',
-            width: '20%',
-
+            width: '15%',
         },
         {
             title: 'Vai trò',
             dataIndex: 'role',
             width: '15%',
+            filters: roles.map(role => ({
+                text: role.name,
+                value: role._id,
+            })),
+            filterMultiple: false,
+            onFilter: (value, record) => record.role === value,
             render: (roleId) => {
                 const role = roles.find(r => r._id === roleId);
                 return role ? role.name : (roleId || 'Không xác định');
@@ -200,51 +291,26 @@ const AdminUser = () => {
 
     const dataSource = users.map((user) => ({
         key: user._id,
-        name: user.name, // Nếu không có name, ghép firstName và lastName
+        name: user.name,
         email: user.email,
         role: user.role,
         phone: user.phone,
         avatar: user.avatar,
     }));
 
-    const onFinish = async (values) => {
-        try {
-            const userData = { ...values, avatar: stateUser.avatar };
-            const response = await addNewUser(userData);
-            if (response.status === 'success') {
-                toast.success(response.message);
-                setStateUser(userData);
-                setIsModalCreateOpen(false);
-                form.resetFields();
-                fetchUsers(currentPage, pageSize);
-            } else {
-                toast.error(response.message);
-            }
-
-        } catch (error) {
-            console.error('Failed to add user:', error);
-            toast.error('Thêm người dùng thất bại!');
-        }
+    const onFinish = (values) => {
+        const userData = { ...values, avatar: stateUser.avatar };
+        mutationAdd.mutate(userData);
     };
 
-    // Cập nhật người dùng
-    const onEditFinish = async (values) => {
-        try {
-            const userData = { ...values, avatar: editUser.avatar, id: editUser.key };
-            const response = await updateUser(editUser.key, userData, access_token);
-            if (response.status === "success") {
-                setEditUser(null);
-                setIsEditModalOpen(false);
-                editForm.resetFields();
-                fetchUsers(currentPage, pageSize);
-                toast.success(response.message);
-            } else {
-                toast.error(response.message);
-            }
-        } catch (error) {
-            console.error('Failed to update user:', error);
-            toast.error('Cập nhật người dùng thất bại!');
-        }
+    const onEditFinish = (values) => {
+        const userData = {
+            id: editUser.key,
+            ...values,
+            avatar: editUser.avatar,
+            access_token
+        };
+        mutationUpdate.mutate(userData);
     };
 
     const onFinishFailed = (errorInfo) => {
@@ -339,21 +405,21 @@ const AdminUser = () => {
         editForm.setFieldsValue({ avatar: file.preview });
     };
 
-    const handleRowSelectionChange = (selectedRowKeys, selectedRows) => {
-        console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+    const handleDeleteConfirm = () => {
+        mutationDelete.mutate({ id: deleteUserId, access_token });
     };
 
-    const handleDeleteConfirm = async () => {
-        try {
-            const response = await deleteUser(deleteUserId, access_token);
-            toast.success(response.message);
-            setIsDeleteModalOpen(false);
-            setDeleteUserId(null);
-            await fetchUsers(currentPage, pageSize);
-        } catch (error) {
-            console.error('Failed to delete user:', error);
-            toast.error('Xóa người dùng thất bại!');
+    const handleDeleteSelected = () => {
+        if (selectedRowKeys.length > 0) {
+            setIsDeleteManyModalOpen(true);
+        } else {
+            toast.warning("Vui lòng chọn ít nhất một sản phẩm để xóa!");
         }
+    };
+
+    const handleDeleteManyConfirm = () => {
+        mutationDeleteManyUser.mutate({ ids: selectedRowKeys, access_token });
+        setIsDeleteManyModalOpen(false);
     };
 
     return (
@@ -363,21 +429,33 @@ const AdminUser = () => {
                 <PlusSquareTwoTone style={{ fontSize: "50px" }} />
             </ButtonAddUser>
             <div style={{ marginTop: "10px" }}>
-                <TableComponent
-                    columns={columns}
-                    dataSource={dataSource}
-                    selectionType="checkbox"
-                    onRowSelectionChange={handleRowSelectionChange}
-                    pagination={{
-                        current: currentPage,
-                        pageSize: pageSize,
-                        total: totalUsers,
-                        showSizeChanger: true,
-                        pageSizeOptions: ['4', '5', '8'],
-                        showTotal: () => null,
-                    }}
-                    onChange={handleTableChange}
-                />
+                <Loading isPending={isTableLoading}>
+                    <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+                        <Button
+                            type="primary"
+                            danger
+                            onClick={handleDeleteSelected}
+                            disabled={selectedRowKeys.length === 0}
+                            style={{ marginBottom: "10px" }}
+                        >
+                            Xóa các sản phẩm đã chọn
+                        </Button>
+                    </div>
+                    <TableComponent
+                        columns={columns}
+                        dataSource={dataSource}
+                        rowSelection={rowSelection} // Thêm rowSelection để hiển thị checkbox
+                        pagination={{
+                            current: currentPage,
+                            pageSize: pageSize,
+                            total: totalUsers,
+                            showSizeChanger: true,
+                            pageSizeOptions: ['4', '5', '8'],
+                            showTotal: () => null,
+                        }}
+                        onChange={handleTableChange}
+                    />
+                </Loading>
             </div>
 
             {/* Modal chỉnh sửa người dùng */}
@@ -389,96 +467,93 @@ const AdminUser = () => {
                 okText="Lưu"
                 cancelText="Hủy"
             >
-                <Form
-                    form={editForm}
-                    name="edit"
-                    labelCol={{ span: 8 }}
-                    wrapperCol={{ span: 16 }}
-                    style={{ maxWidth: 600 }}
-                    onFinish={onEditFinish}
-                    onFinishFailed={onFinishFailed}
-                    autoComplete="off"
-                >
-                    <Form.Item
-                        label="Tên người dùng"
-                        name="name"
-                        rules={[{ required: true, message: 'Vui lòng nhập tên người dùng!' }]}
+                <Loading isPending={isUpdating}>
+                    <Form
+                        form={editForm}
+                        name="edit"
+                        labelCol={{ span: 8 }}
+                        wrapperCol={{ span: 16 }}
+                        style={{ maxWidth: 600 }}
+                        onFinish={onEditFinish}
+                        onFinishFailed={onFinishFailed}
+                        autoComplete="off"
                     >
-                        <Input value={editUser?.name} onChange={handleEditOnChange} name="name" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[
-                            { required: true, message: 'Vui lòng nhập email!' },
-                            { type: 'email', message: 'Email không hợp lệ!' }
-                        ]}
-                    >
-                        <Input value={editUser?.email} onChange={handleEditOnChange} name="email" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Vai trò"
-                        name="role"
-                        rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]}
-                    >
-                        <Select
-                            value={editUser?.role}
-                            onChange={handleEditRoleChange}
-                            placeholder="Chọn vai trò"
+                        <Form.Item
+                            label="Tên người dùng"
+                            name="name"
+                            rules={[{ required: true, message: 'Vui lòng nhập tên người dùng!' }]}
                         >
-                            {roles.map((role) => (
-                                <Option key={role._id} value={role._id}>
-                                    {role.name}
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
+                            <Input value={editUser?.name} onChange={handleEditOnChange} name="name" />
+                        </Form.Item>
 
-                    <Form.Item
-                        label="Số điện thoại"
-                        name="phone"
-                        rules={[
-                            { required: true, message: 'Vui lòng nhập số điện thoại!' },
-                            { pattern: /^[0-9]{10}$/, message: 'Số điện thoại phải có 10 chữ số!' }
-                        ]}
-                    >
-                        <Input value={editUser?.phone} onChange={handleEditOnChange} name="phone" />
-                    </Form.Item>
+                        <Form.Item
+                            label="Email"
+                            name="email"
+                            rules={[
+                                { required: true, message: 'Vui lòng nhập email!' },
+                                { type: 'email', message: 'Email không hợp lệ!' }
+                            ]}
+                        >
+                            <Input value={editUser?.email} onChange={handleEditOnChange} name="email" />
+                        </Form.Item>
 
-                    <Form.Item
-                        label="Avatar"
-                        name="avatar"
-                        rules={[{ required: true, message: 'Vui lòng chọn avatar!' }]}
-                    >
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                            <Upload
-                                onChange={handleEditImageChange}
-                                maxCount={1}
-                                showUploadList={false}
-                                beforeUpload={() => false}
+                        <Form.Item
+                            label="Vai trò"
+                            name="role"
+                            rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]}
+                        >
+                            <Select
+                                value={editUser?.role}
+                                onChange={handleEditRoleChange}
+                                placeholder="Chọn vai trò"
                             >
-                                <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
-                            </Upload>
-                            {editUser?.avatar && (
-                                <img
-                                    src={editUser.avatar}
-                                    alt="avatar preview"
-                                    style={{
-                                        width: '50px',
-                                        height: '50px',
-                                        objectFit: 'cover',
-                                        margin: '0 15px',
-                                        borderRadius: '50%'
-                                    }}
-                                />
-                            )}
-                        </div>
-                    </Form.Item>
-                </Form>
-            </Modal>
+                                {roles.map((role) => (
+                                    <Option key={role._id} value={role._id}>
+                                        {role.name}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
 
+                        <Form.Item
+                            label="Số điện thoại"
+                            name="phone"
+                            rules={[
+                                { required: true, message: 'Vui lòng nhập số điện thoại!' },
+                                { pattern: /^[0-9]{10}$/, message: 'Số điện thoại phải có 10 chữ số!' }
+                            ]}
+                        >
+                            <Input value={editUser?.phone} onChange={handleEditOnChange} name="phone" />
+                        </Form.Item>
+
+                        <Form.Item label="Avatar" name="avatar">
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <Upload
+                                    onChange={handleEditImageChange}
+                                    maxCount={1}
+                                    showUploadList={false}
+                                    beforeUpload={() => false}
+                                >
+                                    <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+                                </Upload>
+                                {editUser?.avatar && (
+                                    <img
+                                        src={editUser.avatar}
+                                        alt="avatar preview"
+                                        style={{
+                                            width: '50px',
+                                            height: '50px',
+                                            objectFit: 'cover',
+                                            margin: '0 15px',
+                                            borderRadius: '50%'
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        </Form.Item>
+                    </Form>
+                </Loading>
+            </Modal>
 
             {/* Modal thêm người dùng */}
             <Modal
@@ -489,134 +564,133 @@ const AdminUser = () => {
                 okText="Thêm"
                 cancelText="Hủy"
             >
-                <Form
-                    form={form}
-                    name="basic"
-                    labelCol={{ span: 8 }}
-                    wrapperCol={{ span: 16 }}
-                    style={{ maxWidth: 600 }}
-                    initialValues={initialValues}
-                    onFinish={onFinish}
-                    onFinishFailed={onFinishFailed}
-                    autoComplete="off"
-                >
-                    <Form.Item
-                        label="Tên người dùng"
-                        name="name"
-                        rules={[{ required: true, message: 'Vui lòng nhập tên người dùng!' }]}
+                <Loading isPending={isAdding}>
+                    <Form
+                        form={form}
+                        name="basic"
+                        labelCol={{ span: 8 }}
+                        wrapperCol={{ span: 16 }}
+                        style={{ maxWidth: 600 }}
+                        initialValues={initialValues}
+                        onFinish={onFinish}
+                        onFinishFailed={onFinishFailed}
+                        autoComplete="off"
                     >
-                        <Input value={stateUser.name} onChange={handleOnChange} name="name" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[
-                            { required: true, message: 'Vui lòng nhập email!' },
-                            { type: 'email', message: 'Email không hợp lệ!' }
-                        ]}
-                    >
-                        <Input value={stateUser.email} onChange={handleOnChange} name="email" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Vai trò"
-                        name="role"
-                        rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]}
-                    >
-                        <Select
-                            value={stateUser.role}
-                            onChange={handleRoleChange}
-                            placeholder="Chọn vai trò"
+                        <Form.Item
+                            label="Tên người dùng"
+                            name="name"
+                            rules={[{ required: true, message: 'Vui lòng nhập tên người dùng!' }]}
                         >
-                            {roles.map((role) => (
-                                <Option key={role._id} value={role._id}>
-                                    {role.name}
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
+                            <Input value={stateUser.name} onChange={handleOnChange} name="name" />
+                        </Form.Item>
 
-                    <Form.Item
-                        label="Số điện thoại"
-                        name="phone"
-                        rules={[
-                            { required: true, message: 'Vui lòng nhập số điện thoại!' },
-                            { pattern: /^[0-9]{10}$/, message: 'Số điện thoại phải có 10 chữ số!' }
-                        ]}
-                    >
-                        <Input value={stateUser.phone} onChange={handleOnChange} name="phone" />
-                    </Form.Item>
+                        <Form.Item
+                            label="Email"
+                            name="email"
+                            rules={[
+                                { required: true, message: 'Vui lòng nhập email!' },
+                                { type: 'email', message: 'Email không hợp lệ!' }
+                            ]}
+                        >
+                            <Input value={stateUser.email} onChange={handleOnChange} name="email" />
+                        </Form.Item>
 
-                    <Form.Item
-                        label="Mật khẩu"
-                        name="password"
-                        rules={[
-                            { required: true, message: 'Vui lòng nhập mật khẩu!' },
-                            { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
-                        ]}
-                    >
-                        <Input.Password
-                            value={stateUser.password}
-                            onChange={handleOnChange}
-                            name="password"
-                            placeholder="Nhập mật khẩu"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Xác nhận mật khẩu"
-                        name="confirmPassword"
-                        dependencies={['password']}
-                        rules={[
-                            { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
-                            ({ getFieldValue }) => ({
-                                validator(_, value) {
-                                    if (!value || getFieldValue('password') === value) {
-                                        return Promise.resolve();
-                                    }
-                                    return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
-                                },
-                            }),
-                        ]}
-                    >
-                        <Input.Password
-                            value={stateUser.confirmPassword}
-                            onChange={handleOnChange}
-                            name="confirmPassword"
-                            placeholder="Xác nhận mật khẩu"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Avatar"
-                        name="avatar"
-                    >
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                            <Upload
-                                onChange={handleImageChange}
-                                maxCount={1}
-                                showUploadList={false}
-                                beforeUpload={() => false}
+                        <Form.Item
+                            label="Vai trò"
+                            name="role"
+                            rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]}
+                        >
+                            <Select
+                                value={stateUser.role}
+                                onChange={handleRoleChange}
+                                placeholder="Chọn vai trò"
                             >
-                                <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
-                            </Upload>
-                            {stateUser.avatar && (
-                                <img
-                                    src={stateUser.avatar}
-                                    alt="avatar preview"
-                                    style={{
-                                        width: '50px',
-                                        height: '50px',
-                                        objectFit: 'cover',
-                                        margin: '0 15px',
-                                        borderRadius: '50%'
-                                    }}
-                                />
-                            )}
-                        </div>
-                    </Form.Item>
-                </Form>
+                                {roles.map((role) => (
+                                    <Option key={role._id} value={role._id}>
+                                        {role.name}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Số điện thoại"
+                            name="phone"
+                            rules={[
+                                { required: true, message: 'Vui lòng nhập số điện thoại!' },
+                                { pattern: /^[0-9]{10}$/, message: 'Số điện thoại phải có 10 chữ số!' }
+                            ]}
+                        >
+                            <Input value={stateUser.phone} onChange={handleOnChange} name="phone" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Mật khẩu"
+                            name="password"
+                            rules={[
+                                { required: true, message: 'Vui lòng nhập mật khẩu!' },
+                                { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
+                            ]}
+                        >
+                            <Input.Password
+                                value={stateUser.password}
+                                onChange={handleOnChange}
+                                name="password"
+                                placeholder="Nhập mật khẩu"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Xác nhận mật khẩu"
+                            name="confirmPassword"
+                            dependencies={['password']}
+                            rules={[
+                                { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        if (!value || getFieldValue('password') === value) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                                    },
+                                }),
+                            ]}
+                        >
+                            <Input.Password
+                                value={stateUser.confirmPassword}
+                                onChange={handleOnChange}
+                                name="confirmPassword"
+                                placeholder="Xác nhận mật khẩu"
+                            />
+                        </Form.Item>
+
+                        <Form.Item label="Avatar" name="avatar">
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <Upload
+                                    onChange={handleImageChange}
+                                    maxCount={1}
+                                    showUploadList={false}
+                                    beforeUpload={() => false}
+                                >
+                                    <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+                                </Upload>
+                                {stateUser.avatar && (
+                                    <img
+                                        src={stateUser.avatar}
+                                        alt="avatar preview"
+                                        style={{
+                                            width: '50px',
+                                            height: '50px',
+                                            objectFit: 'cover',
+                                            margin: '0 15px',
+                                            borderRadius: '50%'
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        </Form.Item>
+                    </Form>
+                </Loading>
             </Modal>
 
             {/* Modal xem chi tiết người dùng */}
@@ -708,7 +782,23 @@ const AdminUser = () => {
                 okType="danger"
                 cancelText="Hủy"
             >
-                <p>Bạn có chắc chắn muốn xóa người dùng này không?</p>
+                <Loading isPending={isDeleting}>
+                    <p>Bạn có chắc chắn muốn xóa người dùng này không?</p>
+                </Loading>
+            </Modal>
+
+            <Modal
+                title="Xác nhận xóa nhiều sản phẩm"
+                open={isDeleteManyModalOpen}
+                onOk={handleDeleteManyConfirm}
+                onCancel={() => setIsDeleteManyModalOpen(false)}
+                okText="Xóa"
+                okType="danger"
+                cancelText="Hủy"
+            >
+                <Loading isPending={isPending}>
+                    <p>Bạn có chắc chắn muốn xóa các sản phẩm này không?</p>
+                </Loading>
             </Modal>
         </>
     );

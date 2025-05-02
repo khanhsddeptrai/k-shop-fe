@@ -12,7 +12,7 @@ import * as CategoryService from "../../services/CategoryService";
 import Loading from "../../components/Loading/Loading";
 
 const Home = () => {
-    const [limit, setLimit] = useState(8);
+    const [limit, setLimit] = useState(10);
     const [productsList, setProductsList] = useState([]);
     const [categories, setCategories] = useState([]);
 
@@ -63,7 +63,7 @@ const Home = () => {
 
     return (
         <>
-            <div style={{ padding: "0 120px", display: "flex" }}>
+            <div style={{ display: "flex" }}>
                 <WrapperTypeProduct>
                     {isFetchingCategories ? (
                         <Loading />
@@ -76,7 +76,7 @@ const Home = () => {
                     )}
                 </WrapperTypeProduct>
             </div>
-            <div id="container" style={{ maxWidth: "1000px", background: "#efefef", padding: "0 210px", height: "1505px", margin: "0 auto" }}>
+            <div id="container" style={{ maxWidth: "1000px", padding: "0  100px 15px 100px", margin: "0 auto" }}>
                 <SliderComponent arrImage={[slider1, slider2, slider3]} />
                 <WrapperProducts>
                     {productsList?.length > 0 ? (

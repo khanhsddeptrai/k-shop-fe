@@ -165,11 +165,11 @@ const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
     return (
         <div>
             <WrapperHeader>
-                <Col span={3}>
+                <Col span={5}>
                     <WrapperTextHeader onClick={() => navigate('/')}>K-SHOP</WrapperTextHeader>
                 </Col>
                 {isHiddenSearch === false ? (
-                    <Col span={13}>
+                    <Col span={11}>
                         <Popover
                             content={suggestionContent}
                             open={isPopoverOpen}

@@ -1,11 +1,13 @@
 import React from "react";
 import HeaderComponent from "../HeaderComponent/HeaderComponent";
+import FooterComponent from "../FooterComponent/FooterComponent";
 
 const DefaultComponent = ({ children }) => {
     return (
-        <div>
+        <div style={{ minHeight: "100vh" }} >
             <HeaderComponent isHiddenSearch={false} isHiddenCart={false} />
-            {children}
+            <div style={{ padding: '0 20px' }}>{children}</div>
+            <FooterComponent />
         </div>
     )
 }

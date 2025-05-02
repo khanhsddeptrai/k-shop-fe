@@ -8,7 +8,7 @@ const ProductDetail = () => {
         window.scrollTo(0, 0);
     }, [id]);
     return (
-        <div style={{ padding: "0 120px", background: "#efefef", height: "1000px" }}>
+        <div style={{ padding: "0 120px", background: "rgb(239, 239, 239)" }}>
             <span>Chi tiết sản phẩm</span>
             <ProductDetailComponent productId={id} />
         </div>

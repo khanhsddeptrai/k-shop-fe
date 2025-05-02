@@ -85,3 +85,16 @@ export const WrapperInputNumberQuantity = styled(InputNumber)`
         }
     }
 `;
+
+
+export const WrapperProducts = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px 15px;
+    gap: 15px;
+    align-items: center;
+    margin-top: 20px;
+    justify-content: center;
+    min-height: 200px; /* Đảm bảo chiều cao tối thiểu */
+    overflow: auto; /* Tránh tràn nội dung */
+`;

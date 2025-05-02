@@ -36,7 +36,7 @@ const TypeProducts = () => {
     return (
         <div style={{ width: "100%", background: "#efefef" }}>
             <div style={{ width: "1250px", margin: "0 auto" }}>
-                <Row style={{ padding: "0 120px", background: "#efefef", flexWrap: "nowrap", paddingTop: "10px" }}>
+                <Row style={{ padding: "0 120px 15px 120px", background: "#efefef", flexWrap: "nowrap", paddingTop: "10px" }}>
                     <WrapperNavbar span={5} style={{ borderRadius: "4px", marginRight: "20px" }}>
                         <NavbarComponent />
                     </WrapperNavbar>

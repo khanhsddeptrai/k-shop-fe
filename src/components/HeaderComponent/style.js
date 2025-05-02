@@ -2,15 +2,16 @@ import { Row } from "antd"
 import styled from "styled-components"
 
 export const WrapperHeader = styled(Row)`
-    padding: 10px 130px;
+    padding: 10px 15px;
     background-color: rgb(26,148,255);
     display: flex;
     align-items: center;
-    gap: 16px;
     flex-wrap: nowrap;
+
 `
 
 export const WrapperTextHeader = styled.a`
+    margin-left: 17px;
     color: white;
     font-size: 18px;
     font-weight: bold;
@@ -27,6 +28,7 @@ export const WrapperHeaderAccount = styled.div`
     align-items: center;
     color: #fff;
     gap: 10px;
+    margin-left: 15px;
 `
 
 export const WrapperContentPopover = styled.p`

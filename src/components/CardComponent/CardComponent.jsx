@@ -20,7 +20,7 @@ const CardComponent = (props) => {
         <WrapperCardStyle
             hoverable
             style={{
-                width: 190,
+                width: 180,
                 padding: '10px',
                 opacity: isOutOfStock ? 0.6 : 1, // Dim when out of stock
                 cursor: 'pointer', // Keep cursor clickable

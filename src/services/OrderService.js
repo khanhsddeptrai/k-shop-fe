@@ -47,3 +47,16 @@ export const updateOrderStatus = async (id, status, access_token) => {
     });
     return response.data;
 }
+
+export const updatePaymentStatus = async (id, paymentStatus, access_token) => {
+    const response = await axios.put(
+        `${process.env.REACT_APP_URL_BACKEND}/order/update-payment-status/${id}`,
+        { paymentStatus },
+        {
+            headers: {
+                token: `Bearer ${access_token}`,
+            },
+        }
+    );
+    return response.data;
+};

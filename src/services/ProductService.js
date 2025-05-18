@@ -101,7 +101,7 @@ export const getProductsByCategory = async ({ categoryId, limit = 4, excludeId }
     }
 };
 
-export const getSimilarProducts = async ({ productId, limit = 4 }) => {
+export const getSimilarProducts = async ({ productId, limit }) => {
     try {
         const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/product/similar-products`, {
             params: { productId, limit },

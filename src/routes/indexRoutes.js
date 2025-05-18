@@ -13,7 +13,7 @@ import Checkout from "../pages/Checkout/Checkout"
 import MyOrder from "../pages/MyOrder/MyOrder"
 import OrderDetail from "../pages/OrderDetail/OrderDetail"
 import SearchResult from "../pages/SearchResult/SearchResult"
-import HeaderTest from "../pages/HeaderTest"
+import PaymentResult from "../pages/PaymentResult/PaymentResult"
 
 export const routes = [
     {
@@ -57,6 +57,11 @@ export const routes = [
         isShowHeader: true
     },
     {
+        path: "/payment-result",
+        page: PaymentResult,
+        isShowHeader: true
+    },
+    {
         path: "/category/:categoryId",
         page: TypeProducts,
         isShowHeader: true
@@ -79,11 +84,6 @@ export const routes = [
     {
         path: "/product-detail/:id",
         page: ProductDetail,
-        isShowHeader: true
-    },
-    {
-        path: "/test",
-        page: HeaderTest,
         isShowHeader: true
     },
     {

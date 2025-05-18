@@ -39,6 +39,7 @@ const ProductDetailComponent = ({ productId }) => {
     });
     const [quantity, setQuantity] = useState(1);
     const [recommendedProducts, setRecommendedProducts] = useState([]);
+    const [isExpanded, setIsExpanded] = useState(false); // State for description toggle
     const user = useSelector((state) => state.user);
 
     // Mutation cho chi tiết sản phẩm
@@ -49,7 +50,7 @@ const ProductDetailComponent = ({ productId }) => {
     const mutationRecommended = useMutationHook((data) =>
         getSimilarProducts({
             productId: data.productId,
-            limit: data.limit || 4,
+            limit: data.limit,
         })
     );
     const { data: recommendedData, isPending: isPendingRecommended, isError: isErrorRecommended } = mutationRecommended;
@@ -176,6 +177,17 @@ const ProductDetailComponent = ({ productId }) => {
         });
     };
 
+    // Handle description toggle
+    const toggleDescription = () => {
+        setIsExpanded(!isExpanded);
+    };
+
+    // Truncate description to ~100 characters
+    const truncateDescription = (text, maxLength) => {
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + "...";
+    };
+
     return (
         <Loading isPending={isPending}>
             {isError ? (
@@ -300,8 +312,19 @@ const ProductDetailComponent = ({ productId }) => {
                     <div style={{ marginTop: "20px", background: "#fff", padding: "16px", borderRadius: "4px" }}>
                         <h3 style={{ marginBottom: "16px" }}>Mô tả sản phẩm</h3>
                         <div style={{ lineHeight: "1.6" }}>
-                            {stateProduct.description || "Không có mô tả cho sản phẩm này."}
+                            {isExpanded || stateProduct.description.length <= 100
+                                ? stateProduct.description
+                                : truncateDescription(stateProduct.description, 100)}
                         </div>
+                        {stateProduct.description.length > 100 && (
+                            <Button
+                                type="link"
+                                onClick={toggleDescription}
+                                style={{ padding: "0", marginTop: "8px" }}
+                            >
+                                {isExpanded ? "Thu gọn" : "Xem thêm"}
+                            </Button>
+                        )}
                     </div>
 
                     {/* Phần gợi ý sản phẩm */}
